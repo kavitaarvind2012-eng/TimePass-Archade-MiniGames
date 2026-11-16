@@ -1,0 +1,16 @@
+{
+  "name": "timepass-arcade",
+  "version": "1.0.0",
+  "private": true,
+  "description": "TimePass Arcade static site and Socket.IO multiplayer relay",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "socket.io": "^4.8.1"
+  }
+}

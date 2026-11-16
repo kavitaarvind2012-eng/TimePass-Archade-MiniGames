@@ -527,8 +527,15 @@ class ArcadeApp {
       const joinStatus = document.getElementById('mp-join-status');
       if (status) status.textContent = '✅ Opponent connected! Starting game...';
       if (joinStatus) joinStatus.textContent = '✅ Connected! Starting game...';
-      if (network.isHost) network.upgradeToWebRTC();
+      if (network.isHost && network.mode === 'broadcast') network.upgradeToWebRTC();
       this.launchMultiplayerGame();
+    });
+    network.onError((message) => {
+      const status = network.isHost
+        ? document.getElementById('mp-room-status')
+        : document.getElementById('mp-join-status');
+      if (status) status.textContent = `⚠️ ${message}`;
+      this.showToastNotification('Multiplayer connection failed', message);
     });
     network.onReceiveMove((payload) => {
       if (this.currentGame && typeof this.currentGame.handleNetworkMessage === 'function') {

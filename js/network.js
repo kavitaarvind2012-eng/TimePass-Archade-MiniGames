@@ -11,11 +11,13 @@ class NetworkManager {
     this.mode = 'broadcast'; // 'broadcast' | 'webrtc' | 'socketio'
     this.channel = null;
     this.signalingChannel = null;
+    this.socket = null;
     this.pc = null; // RTCPeerConnection
     this.dc = null; // RTCDataChannel
     this.onReceiveCallbacks = [];
     this.onConnectCallbacks = [];
     this.onDisconnectCallbacks = [];
+    this.onErrorCallbacks = [];
     this.pollInterval = null;
   }
 
@@ -31,6 +33,14 @@ class NetworkManager {
 
   // --- BroadcastChannel Mode (Local cross-tab multiplayer) ---
   createRoom(gameId) {
+    if (this._canUseSocketIO()) {
+      this.roomCode = NetworkManager.generateRoomCode();
+      this.isHost = true;
+      this.mode = 'socketio';
+      this._openSocketRoom('create_room', { roomCode: this.roomCode, gameId });
+      return this.roomCode;
+    }
+
     if (typeof BroadcastChannel === 'undefined') {
       throw new Error('BroadcastChannel is not available in this browser.');
     }
@@ -63,6 +73,14 @@ class NetworkManager {
   }
 
   joinRoom(roomCode, gameId) {
+    if (this._canUseSocketIO()) {
+      this.roomCode = roomCode.toUpperCase();
+      this.isHost = false;
+      this.mode = 'socketio';
+      this._openSocketRoom('join_room', { roomCode: this.roomCode, gameId });
+      return true;
+    }
+
     if (typeof BroadcastChannel === 'undefined') {
       throw new Error('BroadcastChannel is not available in this browser.');
     }
@@ -96,6 +114,64 @@ class NetworkManager {
     return true;
   }
 
+  _canUseSocketIO() {
+    return typeof window.io === 'function' && window.location.protocol !== 'file:';
+  }
+
+  _openSocketRoom(eventName, roomRequest) {
+    const socket = window.io({ autoConnect: false });
+    this.socket = socket;
+    socket.on('game_move', (payload) => {
+      this.onReceiveCallbacks.forEach((callback) => callback(payload));
+    });
+    socket.on('player_joined', () => {
+      this.connected = true;
+      this._notifyConnect();
+    });
+    socket.on('player_left', () => {
+      this.connected = false;
+      this._notifyDisconnect();
+    });
+    socket.on('room_closed', () => {
+      this.connected = false;
+      this._notifyDisconnect();
+      this._notifyError('The room host disconnected.');
+    });
+    socket.on('connect_error', () => {
+      this._notifyError('Could not connect to the multiplayer server. Make sure the host server is running.');
+    });
+    socket.on('disconnect', (reason) => {
+      if (reason === 'io client disconnect') return;
+      this.connected = false;
+      this._notifyDisconnect();
+    });
+
+    const requestRoom = () => {
+      if (this.socket !== socket) return;
+      socket.timeout(8000).emit(eventName, roomRequest, (timeoutError, response) => {
+        if (this.socket !== socket) return;
+        if (timeoutError) {
+          this._notifyError('The multiplayer server did not respond. Please try again.');
+          return;
+        }
+        if (!response || !response.ok) {
+          this._notifyError(response?.error || 'The multiplayer server rejected the room request.');
+          return;
+        }
+        if (eventName === 'join_room') {
+          this.connected = true;
+          this._notifyConnect();
+        }
+      });
+    };
+
+    if (socket.connected) requestRoom();
+    else {
+      socket.once('connect', requestRoom);
+      socket.connect();
+    }
+  }
+
   // --- Core messaging API (Socket.io compatible interface) ---
   sendMove(data) {
     const payload = {
@@ -105,7 +181,9 @@ class NetworkManager {
       timestamp: Date.now()
     };
 
-    if (this.mode === 'webrtc' && this.dc && this.dc.readyState === 'open') {
+    if (this.mode === 'socketio' && this.socket && this.connected) {
+      this.socket.emit('game_move', { roomCode: this.roomCode, data });
+    } else if (this.mode === 'webrtc' && this.dc && this.dc.readyState === 'open') {
       this.dc.send(JSON.stringify(payload));
     } else if (this.channel) {
       this.channel.postMessage(payload);
@@ -120,7 +198,9 @@ class NetworkManager {
       timestamp: Date.now()
     };
 
-    if (this.mode === 'webrtc' && this.dc && this.dc.readyState === 'open') {
+    if (this.mode === 'socketio' && this.socket && this.connected) {
+      this.socket.emit('game_move', { roomCode: this.roomCode, data: state });
+    } else if (this.mode === 'webrtc' && this.dc && this.dc.readyState === 'open') {
       this.dc.send(JSON.stringify(payload));
     } else if (this.channel) {
       this.channel.postMessage(payload);
@@ -135,7 +215,9 @@ class NetworkManager {
       timestamp: Date.now()
     };
 
-    if (this.mode === 'broadcast' && this.channel) {
+    if (this.mode === 'socketio' && this.socket && this.connected) {
+      this.socket.emit('game_move', { roomCode: this.roomCode, data: { action: 'chat', message } });
+    } else if (this.mode === 'broadcast' && this.channel) {
       this.channel.postMessage(payload);
     }
   }
@@ -151,6 +233,10 @@ class NetworkManager {
 
   onDisconnect(callback) {
     this.onDisconnectCallbacks.push(callback);
+  }
+
+  onError(callback) {
+    this.onErrorCallbacks.push(callback);
   }
 
   _handleMessage(payload) {
@@ -267,6 +353,10 @@ class NetworkManager {
     this.onDisconnectCallbacks.forEach((cb) => cb());
   }
 
+  _notifyError(message) {
+    this.onErrorCallbacks.forEach((callback) => callback(message));
+  }
+
   // --- WebRTC P2P upgrade (manual signaling via BroadcastChannel) ---
   async upgradeToWebRTC() {
     if (!window.RTCPeerConnection || !this.isHost || !this.signalingChannel ||
@@ -309,6 +399,10 @@ class NetworkManager {
 
   // --- Cleanup ---
   disconnect() {
+    if (this.socket) {
+      this.socket.disconnect();
+      this.socket = null;
+    }
     if (this.channel) {
       this.channel.postMessage({
         type: 'system',
