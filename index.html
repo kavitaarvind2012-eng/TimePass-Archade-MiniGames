@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="description" content="TimePass Arcade - A cozy, addictive hub of quick, polished mini-games and tactile time-wasters to cure your boredom." />
+  <title>TimePass Arcade — Mini-Games & Boredom Cure</title>
+
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/games.css" />
+</head>
+<body>
+
+  <!-- Persistent Arcade Header -->
+  <header class="arcade-header">
+    <div class="header-inner">
+      <div class="brand-section" id="brand-home-btn" title="Back to Hub">
+        <div class="brand-logo-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="5 3 19 12 5 21 5 3"/>
+            <line x1="19" y1="5" x2="19" y2="19"/>
+          </svg>
+        </div>
+        <div class="brand-title-wrap">
+          <h1>TIMEPASS ARCADE</h1>
+          <span class="brand-tagline">Cure your boredom in style</span>
+        </div>
+      </div>
+
+      <div class="header-center">
+        <div class="time-wasted-pill" title="Live total time spent on TimePass Arcade">
+          <span class="time-icon">⏳</span>
+          <span>Time Wasted: <b id="header-time-wasted">00m 00s</b></span>
+        </div>
+        <div class="coins-pill" id="header-coins-pill" title="Arcade Coins Balance (Earned by playing and quests)">
+          <span class="coin-icon">🪙</span>
+          <span id="header-coins-val">120</span>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <!-- 🛠️ Arcade Maker Button -->
+        <button class="btn btn-secondary btn-sm btn-maker" id="arcademaker-btn" title="Create Custom Game Levels!">
+          <span>🛠️</span>
+          <span>Arcade Maker</span>
+        </button>
+
+        <!-- 🌐 Online Duel Button -->
+        <button class="btn btn-secondary btn-sm btn-duel" id="multiplayer-btn" title="2-Player Online Duel Rooms">
+          <span>🌐</span>
+          <span>Online Duel</span>
+        </button>
+
+        <!-- 📺 CRT Mode Toggle -->
+        <button class="btn btn-icon btn-crt" id="crt-toggle-btn" aria-label="Toggle Retro CRT Filter" title="Toggle Retro CRT Scanline Filter">
+          <span>📺</span>
+        </button>
+
+        <!-- 🎲 Random Game / I'm Bored -->
+        <button class="btn btn-primary btn-sm btn-random" id="random-game-btn" title="Launch a Random Game!">
+          <span>🎲</span>
+          <span>I'm Bored</span>
+        </button>
+
+        <!-- 🎵 Ambient Lo-Fi Generator Toggle -->
+        <button class="btn btn-icon btn-lofi" id="lofi-toggle-btn" aria-label="Toggle Lo-Fi Ambient Sound" title="Toggle Lo-Fi Ambient Generator (Web Audio API)">
+          <span class="lofi-icon-slot">🎵</span>
+        </button>
+
+        <!-- 🎨 Theme Palette Selector -->
+        <div class="palette-dropdown-wrap" title="Theme Color Palette">
+          <select id="palette-selector" class="palette-select" aria-label="Theme Palette">
+            <option value="cyan">💎 Cyan Cyber</option>
+            <option value="purple">🔮 Neon Purple</option>
+            <option value="emerald">⚡ Matrix Green</option>
+            <option value="sunset">🌇 Synth Sunset</option>
+          </select>
+        </div>
+
+        <!-- Sound Mute/Unmute Toggle -->
+        <button class="btn btn-icon" id="sound-toggle-btn" aria-label="Toggle Sound" title="Toggle Sound FX">
+          <span id="sound-icon-slot">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+              <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/>
+            </svg>
+          </span>
+        </button>
+
+        <!-- Light / Dark Mode Toggle -->
+        <button class="btn btn-icon" id="theme-toggle-btn" aria-label="Toggle Theme" title="Toggle Light/Dark Mode">
+          <span id="theme-icon-slot">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="5"/>
+              <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+            </svg>
+          </span>
+        </button>
+
+        <!-- 🎯 Daily Quests Button -->
+        <button class="btn btn-secondary btn-sm" id="quests-btn" title="Daily Challenges & Quests">
+          <span>🎯</span>
+          <span>Quests</span>
+          <span class="nav-badge" id="quests-badge" style="display: none;">!</span>
+        </button>
+
+        <!-- 🛍️ Arcade Shop Button -->
+        <button class="btn btn-secondary btn-sm" id="shop-btn" title="Arcade Cosmetics & Cursor Trails">
+          <span>🛍️</span>
+          <span>Shop</span>
+        </button>
+
+        <!-- 🥇 Leaderboard Button -->
+        <button class="btn btn-secondary btn-sm" id="leaderboard-btn" title="Local & Global Leaderboards">
+          <span>🥇</span>
+          <span>Ranks</span>
+        </button>
+
+        <!-- Achievements Trophy Button -->
+        <button class="btn btn-secondary btn-sm" id="achievements-btn" title="View Achievements">
+          <span>🏆</span>
+          <span>Badges</span>
+        </button>
+
+        <!-- Stats Button -->
+        <button class="btn btn-secondary btn-sm" id="stats-btn" title="View Arcade Records">
+          <span>📊</span>
+          <span>Stats</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Area -->
+  <main id="app-container">
+
+    <!-- VIEW 1: HUB BENTO DASHBOARD -->
+    <section id="hub-view" class="hub-view">
+      <div class="hero-hub-header">
+        <h2 class="hub-headline">Welcome to <span class="gradient-text">TimePass Arcade</span></h2>
+        <p class="hub-subtitle">Quick, hyper-polished micro-games and tactile toys crafted for instant gratification.</p>
+
+        <!-- Global Search Bar & Filter Controls -->
+        <div class="search-filter-wrap">
+          <div class="search-input-box">
+            <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+            <input type="text" id="game-search-input" placeholder="Search 36 games (e.g., snake, 2048, wordle, reflex, flappy)..." autocomplete="off" />
+            <button class="clear-search-btn" id="clear-search-btn" aria-label="Clear search" style="display: none;">✕</button>
+          </div>
+          <div class="search-status-tag" id="search-status-tag" style="display: none;"></div>
+        </div>
+
+        <!-- Category Filters -->
+        <div class="filter-container">
+          <button class="category-tab active" data-cat="all">🎮 All Activities</button>
+          <button class="category-tab" data-cat="arcade">⚡ Arcade</button>
+          <button class="category-tab" data-cat="brain">🧩 Brain & Puzzle</button>
+          <button class="category-tab" data-cat="chill">🫧 Chill / Fidget</button>
+          <button class="category-tab category-tab-fav" data-cat="favorites">❤️ Favorites</button>
+        </div>
+      </div>
+
+      <!-- Bento Grid Cards Container -->
+      <div class="bento-container">
+        <div class="bento-grid" id="bento-grid">
+          <!-- Dynamically generated Bento Cards -->
+        </div>
+        <div id="no-search-results" class="no-search-results" style="display: none;">
+          <div class="no-results-icon">🔍</div>
+          <h3>No matching games found</h3>
+          <p>Try searching for a different keyword or category.</p>
+          <button class="btn btn-primary btn-sm" id="reset-search-btn">Show All 36 Games</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW 2: ACTIVE GAME STAGE -->
+    <section id="game-view" class="game-view-stage" style="display: none;">
+      <div class="game-stage-header">
+        <button class="btn btn-secondary" id="back-to-hub-btn">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="15 18 9 12 15 6"/>
+          </svg>
+          Back to Hub
+        </button>
+        <h2 id="active-game-title">Game Title</h2>
+        <div class="stage-right-actions">
+          <button class="btn btn-secondary btn-share-score" id="header-share-score-btn" title="Copy your score to clipboard!">
+            <span>📤</span>
+            <span>Share Score</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Mount point for current game -->
+      <div id="active-game-mount"></div>
+    </section>
+
+  </main>
+
+  <!-- Achievements Modal -->
+  <div class="modal-backdrop" id="achievements-modal">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3>🏆 Hall of Achievements</h3>
+        <button class="btn btn-icon btn-sm modal-close-btn" aria-label="Close">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="achievements-progress-wrap">
+          <div class="progress-labels">
+            <span>Unlock Progress</span>
+            <span id="achievements-progress-text">0 / 40 Unlocked</span>
+          </div>
+          <div class="progress-bar-bg">
+            <div class="progress-bar-fill" id="achievements-progress-bar" style="width: 0%;"></div>
+          </div>
+        </div>
+        <div class="achievements-list" id="achievements-list">
+          <!-- Populated dynamically -->
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary modal-close-btn">Keep Playing</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats Modal -->
+  <div class="modal-backdrop" id="stats-modal">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3>📊 Lifetime Arcade Statistics</h3>
+        <button class="btn btn-icon btn-sm modal-close-btn" aria-label="Close">✕</button>
+      </div>
+      <div class="modal-body" id="stats-modal-body">
+        <!-- Populated dynamically -->
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary modal-close-btn">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Dual-Tab Leaderboard Modal (Phase 2) -->
+  <div class="modal-backdrop" id="leaderboard-modal">
+    <div class="modal-dialog modal-dialog-lg">
+      <div class="modal-header">
+        <div class="modal-title-wrap">
+          <h3>🥇 Arcade Leaderboards</h3>
+          <span class="modal-subtitle">Compete locally and view global daily records</span>
+        </div>
+        <button class="btn btn-icon btn-sm modal-close-btn" aria-label="Close">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="leaderboard-tabs">
+          <button class="leaderboard-tab active" data-tab="local">🏆 Local High Scores</button>
+          <button class="leaderboard-tab" data-tab="global">🌍 Global Daily</button>
+        </div>
+
+        <!-- Local High Scores Panel -->
+        <div class="leaderboard-panel active" id="leaderboard-panel-local">
+          <div class="leaderboard-list" id="local-leaderboard-list">
+            <!-- Populated via storageManager.getLocalLeaderboard() -->
+          </div>
+        </div>
+
+        <!-- Global Daily Panel (with API connector support) -->
+        <div class="leaderboard-panel" id="leaderboard-panel-global">
+          <div class="api-connector-pill">
+            <span class="api-status-dot"></span>
+            <span>REST API Endpoint: <code>/api/leaderboard</code> &bull; Global Sync Enabled</span>
+          </div>
+          <div class="leaderboard-list" id="global-leaderboard-list">
+            <!-- Populated via storageManager.getGlobalLeaderboard() -->
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary modal-close-btn">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Daily Challenges / Quests Modal (Phase 4) -->
+  <div class="modal-backdrop" id="quests-modal">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <div class="modal-title-wrap">
+          <h3>🎯 Daily Arcade Quests</h3>
+          <span class="modal-subtitle">Resets every 24 hours &bull; Complete for Arcade Coins</span>
+        </div>
+        <button class="btn btn-icon btn-sm modal-close-btn" aria-label="Close">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="quests-date-banner">
+          <span class="banner-clock">⏰</span>
+          <span id="quests-date-label">Today's Missions</span>
+        </div>
+        <div class="quests-list" id="daily-quests-list">
+          <!-- Populated dynamically -->
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary modal-close-btn">Done</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Arcade Shop & Cosmetics Modal (Phase 4) -->
+  <div class="modal-backdrop" id="shop-modal">
+    <div class="modal-dialog modal-dialog-lg">
+      <div class="modal-header">
+        <div class="modal-title-wrap">
+          <h3>🛍️ TimePass Arcade Shop</h3>
+          <span class="modal-subtitle">Spend coins to unlock custom border skins & special cursor particle trails</span>
+        </div>
+        <button class="btn btn-icon btn-sm modal-close-btn" aria-label="Close">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="shop-wallet-banner">
+          <div class="wallet-info">
+            <span class="wallet-icon">🪙</span>
+            <div>
+              <span class="wallet-label">Your Coin Balance</span>
+              <h3 class="wallet-amount" id="shop-wallet-amount">120 Coins</h3>
+            </div>
+          </div>
+          <span class="wallet-hint">Earn coins by playing mini-games, completing quests & wasting time!</span>
+        </div>
+
+        <div class="shop-section">
+          <h4 class="shop-section-title">✨ Dashboard Neon Border Themes</h4>
+          <div class="shop-grid" id="shop-skins-grid">
+            <!-- Populated dynamically -->
+          </div>
+        </div>
+
+        <div class="shop-section">
+          <h4 class="shop-section-title">💫 Special Cursor Particle Trails</h4>
+          <div class="shop-grid" id="shop-trails-grid">
+            <!-- Populated dynamically -->
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary modal-close-btn">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Cursor Particle Trails Canvas -->
+  <canvas id="cursor-trail-canvas"></canvas>
+
+  <!-- CRT Retro Overlay (Feature 3) -->
+  <div id="crt-overlay" class="crt-overlay" style="display: none;">
+    <div class="crt-scanlines"></div>
+    <div class="crt-vignette"></div>
+  </div>
+
+  <!-- Arcade Maker Modal (Feature 1) -->
+  <div class="modal-backdrop" id="arcademaker-modal">
+    <div class="modal-dialog modal-dialog-lg modal-dialog-maker">
+      <div class="modal-header">
+        <div class="modal-title-wrap">
+          <h3>🛠️ Arcade Maker — Custom Level Creator</h3>
+          <span class="modal-subtitle">Design your own maze, set a custom Wordle word, or mod Tetris rules &bull; Share with friends via URL</span>
+        </div>
+        <button class="btn btn-icon btn-sm modal-close-btn" aria-label="Close">✕</button>
+      </div>
+      <div class="modal-body" id="arcademaker-body">
+        <!-- Populated dynamically by ArcadeMaker -->
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary modal-close-btn">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Multiplayer Lobby Modal (Feature 2) -->
+  <div class="modal-backdrop" id="multiplayer-modal">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <div class="modal-title-wrap">
+          <h3>🌐 Online Duel — 2-Player Rooms</h3>
+          <span class="modal-subtitle">WebRTC P2P with same-origin BroadcastChannel signaling; use the Socket.io adapter for a hosted relay.</span>
+        </div>
+        <button class="btn btn-icon btn-sm modal-close-btn" aria-label="Close">✕</button>
+      </div>
+      <div class="modal-body" id="multiplayer-body">
+        <div class="mp-game-select">
+          <h4 class="mp-section-title">Choose a Multiplayer Game</h4>
+          <div class="mp-game-grid">
+            <button class="mp-game-card" data-mp-game="pong">
+              <span class="mp-game-icon">🏓</span>
+              <span class="mp-game-name">Neon Pong</span>
+              <span class="mp-game-desc">Real-time paddle duel</span>
+            </button>
+            <button class="mp-game-card" data-mp-game="ttt">
+              <span class="mp-game-icon">❌</span>
+              <span class="mp-game-name">Tic-Tac-Toe</span>
+              <span class="mp-game-desc">Turn-based strategy</span>
+            </button>
+            <button class="mp-game-card" data-mp-game="connect4">
+              <span class="mp-game-icon">🔴</span>
+              <span class="mp-game-name">Connect Four</span>
+              <span class="mp-game-desc">Drop tokens to connect 4</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="mp-room-setup" id="mp-room-setup" style="display: none;">
+          <h4 class="mp-section-title">Room Setup — <span id="mp-selected-game-label">Game</span></h4>
+          <div class="mp-mode-tabs">
+            <button class="mp-mode-tab active" id="mp-tab-create">🏠 Create Room</button>
+            <button class="mp-mode-tab" id="mp-tab-join">🔗 Join Room</button>
+          </div>
+
+          <div class="mp-create-panel" id="mp-create-panel">
+            <p>Create a room and share the code with your opponent.</p>
+            <button class="btn btn-primary" id="mp-create-room-btn">Generate Room Code</button>
+            <div class="mp-room-code-display" id="mp-room-code-display" style="display: none;">
+              <span class="mp-code-label">Your Room Code:</span>
+              <div class="mp-code-big" id="mp-room-code-big">----</div>
+              <span class="mp-code-status" id="mp-room-status">⏳ Waiting for opponent to join...</span>
+              <button class="btn btn-sm btn-secondary" id="mp-copy-code-btn">📋 Copy Code</button>
+            </div>
+          </div>
+
+          <div class="mp-join-panel" id="mp-join-panel" style="display: none;">
+            <p>Enter the 4-character room code from your friend.</p>
+            <div class="mp-join-input-wrap">
+              <input type="text" id="mp-join-code-input" maxlength="4" placeholder="ARC7" class="maker-input maker-input-lg" style="text-transform: uppercase; letter-spacing: 0.3em; text-align: center; width: 160px; font-family: var(--font-mono);" />
+              <button class="btn btn-primary" id="mp-join-room-btn">Join Room</button>
+            </div>
+            <span class="mp-code-status" id="mp-join-status"></span>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary modal-close-btn">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="js/audio.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/network.js"></script>
+  <script src="js/arcademaker.js"></script>
+  <script src="js/games/snake.js"></script>
+  <script src="js/games/puzzle2048.js"></script>
+  <script src="js/games/memory.js"></script>
+  <script src="js/games/aim.js"></script>
+  <script src="js/games/fidget.js"></script>
+  <script src="js/games/wordle.js"></script>
+  <script src="js/games/arcade_games.js"></script>
+  <script src="js/games/puzzle_games.js"></script>
+  <script src="js/games/fidget_games.js"></script>
+  <script src="js/app.js"></script>
+
+</body>
+</html>
