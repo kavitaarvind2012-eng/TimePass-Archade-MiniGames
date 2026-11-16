@@ -521,6 +521,7 @@ class ArcadeApp {
     window.networkManager = network;
     this.multiplayerGameId = null;
     this.mpLaunchPending = false;
+    this.renderMultiplayerGames();
 
     network.onConnect(() => {
       const status = document.getElementById('mp-room-status');
@@ -538,6 +539,7 @@ class ArcadeApp {
       this.showToastNotification('Multiplayer connection failed', message);
     });
     network.onReceiveMove((payload) => {
+      if (this.onlineDuel) this.onlineDuel.handleNetworkMessage(payload);
       if (this.currentGame && typeof this.currentGame.handleNetworkMessage === 'function') {
         this.currentGame.handleNetworkMessage(payload);
       }
@@ -553,8 +555,8 @@ class ArcadeApp {
     modal?.querySelectorAll('[data-mp-game]').forEach((button) => {
       button.addEventListener('click', () => {
         this.multiplayerGameId = button.getAttribute('data-mp-game');
-        const labels = { pong: 'Neon Pong', ttt: 'Tic-Tac-Toe', connect4: 'Connect Four' };
-        document.getElementById('mp-selected-game-label').textContent = labels[this.multiplayerGameId];
+        const selectedGame = this.gamesCatalog.find((game) => game.id === this.multiplayerGameId);
+        document.getElementById('mp-selected-game-label').textContent = selectedGame ? selectedGame.title : 'Game';
         modal.querySelector('.mp-game-select').style.display = 'none';
         document.getElementById('mp-room-setup').style.display = 'block';
       });
@@ -614,9 +616,39 @@ class ArcadeApp {
     });
   }
 
+  renderMultiplayerGames() {
+    const grid = document.getElementById('mp-game-grid');
+    if (!grid) return;
+    const icons = {
+      arcade: '⚡',
+      brain: '🧩',
+      chill: '🫧'
+    };
+    grid.replaceChildren();
+    this.gamesCatalog.forEach((game) => {
+      const card = document.createElement('button');
+      card.className = 'mp-game-card';
+      card.dataset.mpGame = game.id;
+      const icon = document.createElement('span');
+      icon.className = 'mp-game-icon';
+      icon.textContent = icons[game.category] || '🎮';
+      const name = document.createElement('span');
+      name.className = 'mp-game-name';
+      name.textContent = game.title;
+      const description = document.createElement('span');
+      description.className = 'mp-game-desc';
+      description.textContent = game.category === 'brain'
+        ? 'Head-to-head puzzle race'
+        : game.category === 'chill' ? 'Arcade score duel' : 'Real-time score duel';
+      card.append(icon, name, description);
+      grid.appendChild(card);
+    });
+  }
+
   openMultiplayerModal(gameId = null) {
     const modal = document.getElementById('multiplayer-modal');
     if (!modal) return;
+    if (gameId === 'connect4') gameId = 'connectfour';
     modal.querySelector('.mp-game-select').style.display = gameId ? 'none' : '';
     document.getElementById('mp-room-setup').style.display = gameId ? 'block' : 'none';
     document.getElementById('mp-room-code-display').style.display = 'none';
@@ -624,8 +656,8 @@ class ArcadeApp {
     document.getElementById('mp-join-status').textContent = '';
     this.multiplayerGameId = gameId;
     if (gameId) {
-      const labels = { pong: 'Neon Pong', ttt: 'Tic-Tac-Toe', connect4: 'Connect Four' };
-      document.getElementById('mp-selected-game-label').textContent = labels[gameId];
+      const selectedGame = this.gamesCatalog.find((game) => game.id === gameId);
+      document.getElementById('mp-selected-game-label').textContent = selectedGame ? selectedGame.title : 'Game';
     }
     this.setMultiplayerMode('create');
     modal.classList.add('open');
@@ -643,8 +675,7 @@ class ArcadeApp {
     if (!this.mpLaunchPending || !this.multiplayerGameId || !this.networkManager.connected) return;
     this.mpLaunchPending = false;
     document.getElementById('multiplayer-modal').classList.remove('open');
-    const gameIds = { pong: 'pong', ttt: 'ttt', connect4: 'connectfour' };
-    this.launchGame(gameIds[this.multiplayerGameId], {
+    this.launchGame(this.multiplayerGameId, {
       online: true,
       isHost: this.networkManager.isHost,
       network: this.networkManager
@@ -1102,6 +1133,11 @@ class ArcadeApp {
       });
     }
 
+    const onlineGameBtn = document.getElementById('game-online-btn');
+    if (onlineGameBtn) {
+      onlineGameBtn.addEventListener('click', () => this.openMultiplayerModal(this.currentGameId));
+    }
+
     const brandBtn = document.getElementById('brand-home-btn');
     if (brandBtn) {
       brandBtn.addEventListener('click', () => {
@@ -1156,6 +1192,10 @@ class ArcadeApp {
     if (!gameDef) return;
 
     if (this.currentGame) {
+      if (this.onlineDuel) {
+        this.onlineDuel.destroy();
+        this.onlineDuel = null;
+      }
       this.currentGame.destroy();
       this.currentGame = null;
     }
@@ -1177,11 +1217,24 @@ class ArcadeApp {
     const mountContainer = document.getElementById('active-game-mount');
     mountContainer.innerHTML = '';
     this.currentGame = new gameDef.classRef(mountContainer, options);
+    if (options.online && this.networkManager) {
+      this.onlineDuel = new window.OnlineDuelController({
+        container: mountContainer,
+        gameId,
+        game: this.currentGame,
+        network: this.networkManager,
+        isHost: options.isHost
+      });
+    }
 
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   returnToHub() {
+    if (this.onlineDuel) {
+      this.onlineDuel.destroy();
+      this.onlineDuel = null;
+    }
     if (this.currentGame) {
       this.currentGame.destroy();
       this.currentGame = null;

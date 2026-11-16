@@ -9,7 +9,14 @@ const { Server } = require('socket.io');
 
 const PORT = Number(process.env.PORT) || 8000;
 const PUBLIC_DIR = __dirname;
-const VALID_GAMES = new Set(['pong', 'ttt', 'connect4']);
+const VALID_GAMES = new Set([
+  'snake', 'puzzle2048', 'memory', 'aim', 'fidget', 'wordle', 'tetris', 'pong', 'ttt',
+  'rpsls', 'flappy', 'starcatcher', 'mole', 'simon', 'minesweeper', 'mathblitz',
+  'colorgate', 'towerstacker', 'wordtyper', 'dicecoin', 'mazerunner', 'hangman',
+  'blackjack', 'slotspinner', 'bouncinglogo', 'plinko', 'lightsout', 'coreclicker',
+  'vaultcracker', 'tileslide', 'bullethell', 'connectfour', 'hilo', 'rhythmtap',
+  'asteroidblaster', 'stonebalancer'
+]);
 const ROOM_CODE_PATTERN = /^[A-HJ-NP-Z2-9]{4}$/;
 const rooms = new Map();
 const socketRooms = new Map();

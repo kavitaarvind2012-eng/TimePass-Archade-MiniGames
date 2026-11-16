@@ -188,12 +188,31 @@
         </button>
         <h2 id="active-game-title">Game Title</h2>
         <div class="stage-right-actions">
+          <button class="btn btn-secondary btn-online-game" id="game-online-btn" title="Challenge a friend to this game">
+            <span>🌐</span>
+            <span>Play Online vs Friend</span>
+          </button>
           <button class="btn btn-secondary btn-share-score" id="header-share-score-btn" title="Copy your score to clipboard!">
             <span>📤</span>
             <span>Share Score</span>
           </button>
         </div>
       </div>
+
+      <section id="online-duel-hud" class="online-duel-hud" aria-live="polite" hidden>
+        <div class="online-duel-heading">
+          <strong>🌐 ONLINE DUEL</strong>
+          <span id="online-duel-room-label"></span>
+        </div>
+        <div class="online-duel-scores">
+          <div><span>YOU</span><strong id="online-duel-local-score">0</strong></div>
+          <div><span>OPPONENT</span><strong id="online-duel-opponent-score">—</strong></div>
+        </div>
+        <div class="online-duel-footer">
+          <span id="online-duel-status">Waiting for score updates…</span>
+          <button class="btn btn-sm btn-secondary" id="online-duel-finish-btn">Finish Run</button>
+        </div>
+      </section>
 
       <!-- Mount point for current game -->
       <div id="active-game-mount"></div>
@@ -385,30 +404,14 @@
       <div class="modal-header">
         <div class="modal-title-wrap">
           <h3>🌐 Online Duel — 2-Player Rooms</h3>
-          <span class="modal-subtitle">WebRTC P2P with same-origin BroadcastChannel signaling; use the Socket.io adapter for a hosted relay.</span>
+          <span class="modal-subtitle">Choose any arcade game and challenge a friend to a live score duel or head-to-head match.</span>
         </div>
         <button class="btn btn-icon btn-sm modal-close-btn" aria-label="Close">✕</button>
       </div>
       <div class="modal-body" id="multiplayer-body">
         <div class="mp-game-select">
           <h4 class="mp-section-title">Choose a Multiplayer Game</h4>
-          <div class="mp-game-grid">
-            <button class="mp-game-card" data-mp-game="pong">
-              <span class="mp-game-icon">🏓</span>
-              <span class="mp-game-name">Neon Pong</span>
-              <span class="mp-game-desc">Real-time paddle duel</span>
-            </button>
-            <button class="mp-game-card" data-mp-game="ttt">
-              <span class="mp-game-icon">❌</span>
-              <span class="mp-game-name">Tic-Tac-Toe</span>
-              <span class="mp-game-desc">Turn-based strategy</span>
-            </button>
-            <button class="mp-game-card" data-mp-game="connect4">
-              <span class="mp-game-icon">🔴</span>
-              <span class="mp-game-name">Connect Four</span>
-              <span class="mp-game-desc">Drop tokens to connect 4</span>
-            </button>
-          </div>
+          <div class="mp-game-grid" id="mp-game-grid"></div>
         </div>
 
         <div class="mp-room-setup" id="mp-room-setup" style="display: none;">
@@ -450,6 +453,7 @@
   <script src="js/storage.js"></script>
   <script src="/socket.io/socket.io.js"></script>
   <script src="js/network.js"></script>
+  <script src="js/duel.js"></script>
   <script src="js/arcademaker.js"></script>
   <script src="js/games/snake.js"></script>
   <script src="js/games/puzzle2048.js"></script>
