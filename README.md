@@ -15,11 +15,12 @@ The multiplayer lobby includes all 36 games. Pong, Tic-Tac-Toe, and Connect Four
 
 ## Share through a Dev Tunnel
 
-In a second terminal, sign in to Dev Tunnels and expose port 8000:
+For the easy setup, double-click `start-devtunnel.bat`. It starts the site server on port 8000 if needed, then opens the public tunnel. Keep both terminal windows open while friends are connected.
+
+On first use, [install the Microsoft Dev Tunnels CLI](https://learn.microsoft.com/azure/developer/dev-tunnels/get-started) and sign in:
 
 ```powershell
 devtunnel user login
-devtunnel host -p 8000 --protocol http --allow-anonymous
 ```
 
-Share the HTTPS URL printed by the tunnel command. `--allow-anonymous` makes the app and room relay accessible to anyone with that URL. Both the Node server and the tunnel process must remain running.
+The batch file runs `devtunnel host -p 8000 --protocol http --allow-anonymous`. Share the HTTPS URL it prints. Anonymous access makes the app and room relay accessible to anyone with that URL, so only expose this arcade site.
